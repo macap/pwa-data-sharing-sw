@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="/manifest.json">
+   <title>App</title>
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    origin:
+    <div id="generated"></div>
+    local:
+    <div id="local"></div>
+    <script>
+      const SHARED_DATA_ENDPOINT = '/token';
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js');
+      }
+      function generateToken() {
+        fetch(SHARED_DATA_ENDPOINT, { method: "POST", body: JSON.stringify({ input: document.getElementById('input').value })}).then(() => {
+          document.getElementById('generated').innerText = 'saved: '+document.getElementById('input').value;
+        });
+      }
+
+      function getToken() {
+        fetch(SHARED_DATA_ENDPOINT).then(response => response.json()).then(json => {
+          document.getElementById('local').innerText = JSON.stringify(json);
+        });
+      }
+    </script>
+    <input type="text" id="input" />
+    <button onClick="generateToken()">save</button>
+    <button onClick="getToken()">fetch</button>
+    <script async src="/pwacompat.js"></script>
+    <style>
+      button {
+        width:100%;
+        margin: 30px 0;
+        display: block;
+      }
+    </style>
+  </body>
+</html>
