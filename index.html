@@ -3,11 +3,16 @@
   <head>
     <meta charset="utf-8">
     <link rel="shortcut icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,shrink-to-fit=no,user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AppTitle">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <!-- <link rel="pwa-setup" href="manifest.json" > -->
     <link rel="manifest" href="/manifest.json">
 
-    <script async src="/pwacompat.js"></script>
+    <!-- <script async src="/pwacompat.js"></script> -->
    <title>App</title>
   </head>
   <body>
@@ -27,7 +32,10 @@
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/service-worker.js').then(registration => {
               console.log("Service Worker registration completed ...");
-              // navigator.serviceWorker.addEventListener('activate', () => { console.log('activate')});
+              navigator.serviceWorker.addEventListener('activate', () => {
+                console.log('activate');
+                
+              });
               isSWRegistered = true;
               
               SWready();
@@ -43,7 +51,18 @@
         return fetch(SHARED_DATA_ENDPOINT).then(response => response.json());
       }
 
+      function loginInline() { 
+        const url = 'https://www.facebook.com/v3.2/dialog/oauth?client_id=367715037330380&state=statparam&response_type=token&redirect_uri=https://afraid-turn.surge.sh/#success';
+      
+        document.location.href = url;
+      }
+
+      function logout() {
+        saveToken({}).then(d => { window.location.reload(); });
+      }
+
       function SWready() {
+        document.getElementById('sw').innerText = '✅ SW registered';
         if (window.location.hash.match(/state/)) {
           const authData = window.location.hash.split('&').map( e => e.split('=')).reduce((acc, el) => { acc[el[0]] = el[1]; return acc }, {}); 
           
@@ -57,6 +76,7 @@
               requestProfileDetails(data.access_token);
             } else {
               document.getElementById('login').style = '';
+              document.getElementById('logout').style = 'display: none;';
               document.getElementById('status').innerText = `Not authenticated`;
             }
           });
@@ -66,23 +86,39 @@
       function requestProfileDetails(access_token) {
           fetch(PROFILE_URL+access_token).then(response => response.json()).then(data => {
             document.getElementById('status').innerText = `Welcome, ${data.name}`;
+            document.getElementById('logout').style = '';
             document.getElementById('login').style = 'display:none';
           });
       }
 
-
-
-
     </script>
+    
+    <div id="main">
+      <div id="login">
+        <a href="https://www.facebook.com/v3.2/dialog/oauth?client_id=367715037330380&state=statparam&response_type=token&redirect_uri=https://afraid-turn.surge.sh/#success">Login with facebook</a>
+        <button onClick="loginInline();">Login with facebook inline</button>
+      </div>
+      <div id="logout" style="display: none;">
+        <button onClick="logout()">Logout</button>
+      </div>
+      
+      <div id="status">
+        ⏱  Wait for authentication
+      </div>
+      <div id="sw">
+        ⏱ Waiting for SW
+      </div>
+    </div>
 
-
-    <a id="login" href="https://www.facebook.com/v3.2/dialog/oauth?client_id=367715037330380&state=statparam&response_type=token&redirect_uri=https://afraid-turn.surge.sh/#success">Login with facebook</a>
-
-    <div id="status">
-      Wait for authentication
+    <div id="backtopwa" style="display: none;">
+      Go back to PWA please.
     </div>
 
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         height: 100vh;
         display: flex;
@@ -90,9 +126,14 @@
         justify-content: center;
         align-items: center;
         font-family: 'Helvetica', arial;
+        background: #41295a; /* fallback for old browsers */
+        background: -webkit-linear-gradient(to bottom, #41295a, #2f0743); /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to bottom, #41295a, #2f0743); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        color: #fff;
+        font-size: 25px;
       }
 
-      #login {
+      a, button {
         width: 80vw;
         background: #4267B2;
         color: #fff;
@@ -105,12 +146,29 @@
         border-radius: 5px;
       }
 
-      #status {
-        font-size: 20px;
+      a, button {
+        display: block;
+        text-align: center;
+        margin: 20px 0;
+        font-size: 1rem;
       }
-    
-    </style>
 
+    </style>
+    <script>
+      
+
+      if (/iPhone/i.test(navigator.userAgent) && !window.navigator.standalone && window.location.hash === '#success') {
+        document.body.style = 'height:120vh;';
+        setTimeout(function() { window.scrollTo(0,1);}, 500);
+
+        document.getElementById('backtopwa').style = '';
+        document.getElementById('main').style = 'display:none';
+
+      }
+
+
+    
+    </script>
     
   </body>
 </html>

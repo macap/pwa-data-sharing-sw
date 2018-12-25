@@ -34,6 +34,7 @@
 
   function setup() {
     const manifestEl = document.head.querySelector('link[rel="manifest"]');
+    // const manifestEl = document.head.querySelector('link[rel="pwa-setup"]');
     const manifestHref = manifestEl ? manifestEl.href : '';
     const hrefFactory = buildHrefFactory([manifestHref, window.location]);
 
