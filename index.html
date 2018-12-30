@@ -6,97 +6,34 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,shrink-to-fit=no,user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="AppTitle">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="App">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 
-    <!-- <link rel="pwa-setup" href="manifest.json" > -->
     <link rel="manifest" href="/manifest.json">
 
-    <!-- <script async src="/pwacompat.js"></script> -->
    <title>App</title>
   </head>
   <body>
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
-
-
-    <script>
-      const APP_ID = '367715037330380';
-      const PROFILE_URL =  "https://graph.facebook.com/v3.2/me?fields=id%2Cname&access_token=";
-      const SHARED_DATA_ENDPOINT = '/token';
-      let isSWRegistered = false;
-      if ('serviceWorker' in navigator) {
-
-        navigator.serviceWorker.addEventListener('activate', () => { console.log('activate')});
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js').then(registration => {
-              console.log("Service Worker registration completed ...");
-              navigator.serviceWorker.addEventListener('activate', () => {
-                console.log('activate');
-                
-              });
-              isSWRegistered = true;
-              
-              SWready();
-
-          });
-        });
-      }
-      
-      function saveToken(data) {
-        return fetch(SHARED_DATA_ENDPOINT, { method: "POST", body: JSON.stringify(data)});
-      } 
-      function getToken() {
-        return fetch(SHARED_DATA_ENDPOINT).then(response => response.json());
-      }
-
-      function loginInline() { 
-        const url = 'https://www.facebook.com/v3.2/dialog/oauth?client_id=367715037330380&state=statparam&response_type=token&redirect_uri=https://afraid-turn.surge.sh/#success';
-      
-        document.location.href = url;
-      }
-
-      function logout() {
-        saveToken({}).then(d => { window.location.reload(); });
-      }
-
-      function SWready() {
-        document.getElementById('sw').innerText = '✅ SW registered';
-        if (window.location.hash.match(/state/)) {
-          const authData = window.location.hash.split('&').map( e => e.split('=')).reduce((acc, el) => { acc[el[0]] = el[1]; return acc }, {}); 
-          
-          saveToken(authData);
-          
-
-          requestProfileDetails(authData.access_token);
-        } else {
-          getToken().then(data => {
-            if (data.access_token) {
-              requestProfileDetails(data.access_token);
-            } else {
-              document.getElementById('login').style = '';
-              document.getElementById('logout').style = 'display: none;';
-              document.getElementById('status').innerText = `Not authenticated`;
-            }
-          });
-        }
-      }
-
-      function requestProfileDetails(access_token) {
-          fetch(PROFILE_URL+access_token).then(response => response.json()).then(data => {
-            document.getElementById('status').innerText = `Welcome, ${data.name}`;
-            document.getElementById('logout').style = '';
-            document.getElementById('login').style = 'display:none';
-          });
-      }
-
-    </script>
     
     <div id="main">
       <div id="login">
-        <a href="https://www.facebook.com/v3.2/dialog/oauth?client_id=367715037330380&state=statparam&response_type=token&redirect_uri=https://afraid-turn.surge.sh/#success">Login with facebook</a>
-        <button onClick="loginInline();">Login with facebook inline</button>
+        <button onClick="login();">Login with facebook</button>
       </div>
       <div id="logout" style="display: none;">
         <button onClick="logout()">Logout</button>
@@ -111,10 +48,93 @@
     </div>
 
     <div id="backtopwa" style="display: none;">
-      Go back to PWA please.
+      <button class="dismiss-button" onClick="hideSuccessScreen();"></button>
+      <div class="back-indicator">
+        <img src="iconfinder_left_up2_308960.svg" alt="" class="back-indicator__icon"/>
+        <div>
+            <div class="ios-back-button">
+                <img src="iconfinder_play-arrow_326577.svg" class="ios-back-button__icon"/>
+                Application
+            </div>
+          <div class="back-indicator__text">Go back to App or relaunch app using home screen icon</div>
+        </div>
+        
+      </div>
+      <img src="iconfinder__Tick_1904674.svg" class="success-icon" />
+      <div class="success-text">Authenticated <br/> successfully</div>
     </div>
 
     <style>
+
+      #backtopwa {
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .back-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        color: #000;
+        background: rgba(255,255,255,0.7);
+        margin: 10px;
+        border-radius: 3px;
+        padding: 5px 0 10px 0;
+      }
+
+      .back-indicator__icon {
+        width: 40px;
+        margin-left: 5px;
+      }
+
+      .back-indicator__text {
+        font-size: 12px;
+        margin-left: 5px;
+      } 
+
+      .ios-back-button {
+        background: #fff;
+        color: #000;
+        font-size: 11px;
+        padding: 2px 3px;
+        line-height: 15px;
+        max-width: 80px;
+        border-radius: 2px;
+        margin: 5px 5px;
+      }
+
+      .ios-back-button__icon {
+        width: 9px;
+        transform: rotate(180deg);
+        vertical-align: middle;
+        margin-right: 2px;
+      }
+      
+      .success-icon {
+        margin: 80px auto;
+        width: 150px;
+        display: block;
+      }
+
+      .success-text {
+        text-align: center; 
+      }
+
+      .dismiss-button {
+        width: 20px;
+        height: 20px;
+        background: url(iconfinder_712_close__cross__cancel__3838414.svg);
+        background-size: 20px 20px;
+        display: block;
+        position: absolute;
+        right: 10px;
+        top: 100px;
+        border:none;
+        padding: 0;
+        margin: 0;
+      }
+
+
       * {
         box-sizing: border-box;
       }
@@ -131,6 +151,8 @@
         background: linear-gradient(to bottom, #41295a, #2f0743); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         color: #fff;
         font-size: 25px;
+        -webkit-font-smoothing: antialiased;
+	      -moz-osx-font-smoothing: grayscale;
       }
 
       a, button {
@@ -144,6 +166,7 @@
         margin: 20px 0;
         padding: 0 20px;
         border-radius: 5px;
+        border:none;
       }
 
       a, button {
@@ -154,17 +177,95 @@
       }
 
     </style>
+      <script>
+        const APP_ID = '367715037330380';
+        const PROFILE_URL =  "https://graph.facebook.com/v3.2/me?fields=id%2Cname&access_token=";
+        const SHARED_DATA_ENDPOINT = '/token';
+        let isSWRegistered = false;
+        if ('serviceWorker' in navigator) {
+  
+          navigator.serviceWorker.addEventListener('activate', () => { console.log('activate')});
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js').then(registration => {
+                // console.log("Service Worker registration completed ...");
+                // navigator.serviceWorker.addEventListener('activate', () => {
+                //   console.log('activate');
+                // });
+                isSWRegistered = true;
+                
+                SWready();
+  
+            });
+          });
+        }
+        
+        function saveToken(data) {
+          return fetch(SHARED_DATA_ENDPOINT, { method: "POST", body: JSON.stringify(data)});
+        } 
+        function getToken() {
+          return fetch(SHARED_DATA_ENDPOINT).then(response => response.json());
+        }
+  
+        function login() { 
+          const openedFromStandalone = window.navigator.standalone ? 'state=standalone' : 'state=default';
+          const url = 'https://www.facebook.com/v3.2/dialog/oauth?client_id=367715037330380&'+openedFromStandalone+'&response_type=token&redirect_uri=https://afraid-turn.surge.sh/';
+        
+          document.location.href = url;
+        }
+  
+        function logout() {
+          saveToken({}).then(d => { window.location.reload(); });
+        }
+  
+        function SWready() {
+          document.getElementById('sw').innerText = '✅ SW registered';
+          if (window.location.hash.match(/state/)) {
+            const authData = window.location.hash.split('&').map( e => e.split('=')).reduce((acc, el) => { acc[el[0]] = el[1]; return acc }, {}); 
+            
+            saveToken(authData);
+            
+  
+            requestProfileDetails(authData.access_token);
+          } else {
+            getToken().then(data => {
+              if (data.access_token) {
+                requestProfileDetails(data.access_token);
+              } else {
+                document.getElementById('login').style = '';
+                document.getElementById('logout').style = 'display: none;';
+                document.getElementById('status').innerText = `Not authenticated`;
+              }
+            });
+          }
+        }
+  
+        function requestProfileDetails(access_token) {
+            fetch(PROFILE_URL+access_token).then(response => response.json()).then(data => {
+              document.getElementById('status').innerText = `Welcome, ${data.name}`;
+              document.getElementById('logout').style = '';
+              document.getElementById('login').style = 'display:none';
+            });
+        }
+
+        function showSuccessScreen() {
+          document.getElementById('backtopwa').style = '';
+          document.getElementById('main').style = 'display:none';
+        }
+
+        function hideSuccessScreen() {
+          document.getElementById('backtopwa').style = 'display:none';
+          document.getElementById('main').style = '';
+        }
+
+        if (/iPhone/i.test(navigator.userAgent) && !window.navigator.standalone && /state=standalone/i.test(window.location.hash)) {
+          showSuccessScreen();
+        }
+  
+      </script>
     <script>
       
 
-      if (/iPhone/i.test(navigator.userAgent) && !window.navigator.standalone && window.location.hash === '#success') {
-        document.body.style = 'height:120vh;';
-        setTimeout(function() { window.scrollTo(0,1);}, 500);
-
-        document.getElementById('backtopwa').style = '';
-        document.getElementById('main').style = 'display:none';
-
-      }
+      
 
 
     
