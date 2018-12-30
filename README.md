@@ -8,7 +8,7 @@ Plain data sharing available on *data-sharing-example* branch.
 
 ### With Oauth
 
-- [http://afraid-turn.surge.sh](http://afraid-turn.surge.sh)
+- [https://afraid-turn.surge.sh](https://afraid-turn.surge.sh)
 - branch: *master*
 
 Token is passed directly to frontend so your data is not collected by me in any way.
